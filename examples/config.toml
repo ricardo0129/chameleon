@@ -1,0 +1,5 @@
+[main]
+source = "123"
+
+[staging]
+source = "/home/ricky/dotfiles/"
