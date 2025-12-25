@@ -1,10 +1,14 @@
+mod cli;
 mod config;
 mod utils;
-use crate::config::profile;
-use crate::utils::file;
-use std::env;
+use clap::Parser;
+
 use std::fs;
 use std::process;
+
+use crate::cli::commands::{Cli, Commands};
+use crate::config::profile;
+use crate::utils::file;
 
 fn example_load_config(filename: &str) {
     let contents = match fs::read_to_string(filename) {
@@ -25,8 +29,26 @@ fn example_load_config(filename: &str) {
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let filename = &args[1];
-    file::create_symlink("./x", "./examples/y");
-    file::remove_all_symlinks("./examples");
+    let cli = Cli::parse();
+
+    match cli.command {
+        Commands::Create { profile_name } => {
+            println!("Initializing new profile: {}", profile_name);
+        }
+        Commands::List {} => {
+            let profiles: Vec<String> = vec![
+                String::from("profile1"),
+                String::from("profile2"),
+                String::from("profile3"),
+            ];
+            for profile in profiles {
+                println!("{}", profile);
+            }
+        }
+        Commands::Switch { profile } => {
+            println!("Switching to profile: {}", profile);
+        }
+    }
+    //file::create_symlink("./x", "./examples/y");
+    //file::remove_all_symlinks("./examples");
 }

@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 toml = { version = "*" }
 serde = { version = "*", features = ["derive"] }
+clap = { version = "*", features = ["derive"] }
