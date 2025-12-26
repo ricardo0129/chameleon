@@ -10,6 +10,6 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     Create { profile_name: String },
-    List {},
+    List { config_path: String },
     Switch { profile: String },
 }
