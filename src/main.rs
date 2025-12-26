@@ -10,7 +10,11 @@ fn main() {
 
     match cli.command {
         Commands::Create { profile_name } => {
+            let profile = profile::Profile {
+                source: String::from("123"),
+            };
             println!("Initializing new profile: {}", profile_name);
+            profile::append_config_toml("examples/config.toml", &profile_name, profile);
         }
         Commands::List { config_path } => {
             let config = profile::load_profiles(&config_path);

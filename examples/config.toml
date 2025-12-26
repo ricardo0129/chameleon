@@ -1,5 +1,8 @@
-[main]
-source = "123"
-
 [staging]
 source = "/home/ricky/dotfiles/"
+
+[new_profile]
+source = "123"
+
+[main]
+source = "123"
