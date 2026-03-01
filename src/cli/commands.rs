@@ -12,4 +12,5 @@ pub enum Commands {
     Create { profile_name: String },
     List { config_path: String },
     Switch { profile: String },
+    Describe { profile_name: String },
 }

@@ -13,6 +13,7 @@ pub struct Config {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Profile {
     pub source: String,
+    pub description: Option<String>,
 }
 
 pub fn switch_profile(profile: &str) {

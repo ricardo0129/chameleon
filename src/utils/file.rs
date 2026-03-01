@@ -2,6 +2,7 @@ use std::fs;
 use std::os::unix;
 use std::path;
 
+#[allow(dead_code)]
 pub fn remove_all_symlinks(directory_path: &str) {
     for entry in fs::read_dir(directory_path).unwrap() {
         match entry {
@@ -21,6 +22,7 @@ pub fn remove_all_symlinks(directory_path: &str) {
     }
 }
 
+#[allow(dead_code)]
 pub fn create_symlink(source_path: &str, destination_path: &str) {
     let absolute_src_path = path::absolute(source_path).unwrap();
     let absolute_dst_path = path::absolute(destination_path).unwrap();
