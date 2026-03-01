@@ -61,3 +61,14 @@ pub fn write_config_toml(config: &Config, file_path: &str) {
     let toml_string = toml::to_string_pretty(config).unwrap();
     fs::write(file_path, toml_string).unwrap();
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_load_profiles() {
+        let config = load_profiles("examples/config.toml");
+        assert!(config.is_ok());
+    }
+}
