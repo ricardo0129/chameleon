@@ -71,4 +71,17 @@ mod tests {
         let config = load_profiles("examples/config.toml");
         assert!(config.is_ok());
     }
+    #[test]
+    fn test_write_config_toml() {
+        let profile = Profile {
+            source: String::from("123"),
+            description: "test profile".to_string().into(),
+        };
+        let mut config = Config {
+            profiles: HashMap::new(),
+        };
+        config.add_profile("test", profile);
+        write_config_toml(&config, "generated/test_config.toml");
+        assert!(std::path::Path::new("generated/test_config.toml").exists());
+    }
 }
