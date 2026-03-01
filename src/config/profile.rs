@@ -58,6 +58,10 @@ pub fn append_config_toml(file_path: &str, name: &str, profile: Profile) {
 }
 
 pub fn write_config_toml(config: &Config, file_path: &str) {
+    let path = std::path::Path::new(file_path);
+    if let Some(parent_dir) = path.parent() {
+        fs::create_dir_all(parent_dir).unwrap();
+    }
     let toml_string = toml::to_string_pretty(config).unwrap();
     fs::write(file_path, toml_string).unwrap();
 }
