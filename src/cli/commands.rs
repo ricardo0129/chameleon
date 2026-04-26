@@ -1,3 +1,4 @@
+use crate::core::engine;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -28,4 +29,30 @@ pub enum Commands {
     Describe {
         profile_name: String,
     },
+}
+
+pub fn run(cli: Cli, db: &mut sled::Db) {
+    match cli.command {
+        Commands::Create { profile_name } => {
+            engine::create(&profile_name);
+        }
+        Commands::List { config_path } => {
+            engine::list(db, &config_path);
+        }
+        Commands::Describe { profile_name } => {
+            engine::describe(&profile_name);
+        }
+        Commands::Add { profile_name } => {
+            engine::add(&profile_name);
+        }
+        Commands::Remove { profile_name } => {
+            engine::remove(&profile_name);
+        }
+        Commands::Swap {
+            profile_name,
+            new_profile_name,
+        } => {
+            engine::swap(&profile_name, &new_profile_name);
+        }
+    }
 }

@@ -16,20 +16,6 @@ pub struct Profile {
     pub description: Option<String>,
 }
 
-pub fn add_profile(profile_name: &str) {
-    println!("adding profile: {}", profile_name);
-}
-
-pub fn remove_profile(profile_name: &str) {
-    println!("removing profile: {}", profile_name);
-}
-
-pub fn swap_profile(profile_name: &str, new_profile_name: &str) {
-    println!("swaping {} for {}", profile_name, new_profile_name);
-    remove_profile(profile_name);
-    add_profile(new_profile_name);
-}
-
 impl Config {
     pub fn add_profile(&mut self, name: &str, profile: Profile) {
         self.profiles.insert(name.to_string(), profile);

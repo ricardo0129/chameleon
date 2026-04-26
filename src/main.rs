@@ -1,54 +1,17 @@
 mod cli;
 mod config;
+mod core;
+mod state;
 mod utils;
-use crate::cli::commands::{Cli, Commands};
-use crate::config::profile;
+use crate::cli::commands;
+use crate::cli::commands::Cli;
+use crate::cli::conf;
 use clap::Parser;
 
 fn main() {
+    let conf = conf::Config::load();
     let cli = Cli::parse();
+    let mut db = sled::open(conf.db_location).unwrap();
 
-    match cli.command {
-        Commands::Create { profile_name } => {
-            let profile = profile::Profile {
-                source: String::from("123"),
-                description: None,
-            };
-            println!("Initializing new profile: {}", profile_name);
-            profile::append_config_toml("examples/config.toml", &profile_name, profile);
-        }
-        Commands::List { config_path } => {
-            let config = profile::load_profiles(&config_path);
-            if let Ok(config) = config {
-                for profile in config.profiles.keys() {
-                    println!("{}", profile);
-                }
-            }
-        }
-        Commands::Describe { profile_name } => {
-            println!("Describe profile: {}", profile_name);
-            let config = profile::load_profiles("examples/config.toml");
-            if let Ok(config) = config {
-                if let Some(profile) = config.profiles.get(&profile_name) {
-                    println!("Source: {}", profile.source);
-                } else {
-                    println!("Profile not found");
-                }
-            }
-        }
-        Commands::Add { profile_name } => {
-            profile::add_profile(&profile_name);
-        }
-        Commands::Remove { profile_name } => {
-            profile::remove_profile(&profile_name);
-        }
-        Commands::Swap {
-            profile_name,
-            new_profile_name,
-        } => {
-            profile::swap_profile(&profile_name, &new_profile_name);
-        }
-    }
-    //file::create_symlink("./x", "./examples/y");
-    //file::remove_all_symlinks("./examples");
+    commands::run(cli, &mut db);
 }
