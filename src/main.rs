@@ -4,10 +4,13 @@ mod state;
 mod utils;
 use crate::cli::commands::{Cli, Commands};
 use crate::config::profile;
+use crate::state::mem::Mem;
 use clap::Parser;
 
 fn main() {
     let cli = Cli::parse();
+    let mem = Mem::new();
+    let db = sled::open("/temp").unwrap();
 
     match cli.command {
         Commands::Create { profile_name } => {
@@ -24,6 +27,7 @@ fn main() {
                 for profile in config.profiles.keys() {
                     println!("{}", profile);
                 }
+                state::mem::save_config(db, &config);
             }
         }
         Commands::Describe { profile_name } => {
@@ -35,6 +39,9 @@ fn main() {
                 } else {
                     println!("Profile not found");
                 }
+            }
+            for key in mem.config.profiles {
+                println!("{:?}", key);
             }
         }
         Commands::Add { profile_name } => {

@@ -31,11 +31,6 @@ pub fn swap_profile(profile_name: &str, new_profile_name: &str) {
 }
 
 impl Config {
-    pub fn new() -> Config {
-        Config {
-            profiles: HashMap::new(),
-        }
-    }
     pub fn add_profile(&mut self, name: &str, profile: Profile) {
         self.profiles.insert(name.to_string(), profile);
     }
