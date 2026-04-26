@@ -1,5 +1,6 @@
 mod cli;
 mod config;
+mod state;
 mod utils;
 use crate::cli::commands::{Cli, Commands};
 use crate::config::profile;
