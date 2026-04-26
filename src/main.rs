@@ -36,9 +36,17 @@ fn main() {
                 }
             }
         }
-        Commands::Switch { profile } => {
-            println!("Switching to profile: {}", profile);
-            profile::switch_profile(&profile);
+        Commands::Add { profile_name } => {
+            profile::add_profile(&profile_name);
+        }
+        Commands::Remove { profile_name } => {
+            profile::remove_profile(&profile_name);
+        }
+        Commands::Swap {
+            profile_name,
+            new_profile_name,
+        } => {
+            profile::swap_profile(&profile_name, &new_profile_name);
         }
     }
     //file::create_symlink("./x", "./examples/y");

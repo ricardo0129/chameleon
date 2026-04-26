@@ -16,8 +16,18 @@ pub struct Profile {
     pub description: Option<String>,
 }
 
-pub fn switch_profile(profile: &str) {
-    println!("Switching {profile}");
+pub fn add_profile(profile_name: &str) {
+    println!("adding profile: {}", profile_name);
+}
+
+pub fn remove_profile(profile_name: &str) {
+    println!("removing profile: {}", profile_name);
+}
+
+pub fn swap_profile(profile_name: &str, new_profile_name: &str) {
+    println!("swaping {} for {}", profile_name, new_profile_name);
+    remove_profile(profile_name);
+    add_profile(new_profile_name);
 }
 
 impl Config {
@@ -69,23 +79,33 @@ pub fn write_config_toml(config: &Config, file_path: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env;
 
     #[test]
-    fn test_load_profiles() {
-        let config = load_profiles("examples/config.toml");
+    fn test_load_profiles_valid() {
+        let config = load_profiles("tests/resources/config.toml");
         assert!(config.is_ok());
     }
+
+    #[test]
+    fn test_load_profiles_invalid() {
+        let config = load_profiles("tests/resources/bad_config.toml");
+        assert!(config.is_err());
+    }
+
     #[test]
     fn test_write_config_toml() {
         let profile = Profile {
-            source: String::from("123"),
-            description: "test profile".to_string().into(),
+            source: String::from("test_profile"),
+            description: "test profile description".to_string().into(),
         };
         let mut config = Config {
             profiles: HashMap::new(),
         };
         config.add_profile("test", profile);
-        write_config_toml(&config, "generated/test_config.toml");
-        assert!(std::path::Path::new("generated/test_config.toml").exists());
+        let mut temp_dir = env::temp_dir();
+        temp_dir.push("test_config.toml");
+        write_config_toml(&config, temp_dir.to_str().unwrap());
+        assert!(temp_dir.exists());
     }
 }

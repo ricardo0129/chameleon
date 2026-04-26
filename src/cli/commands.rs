@@ -9,8 +9,23 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    Create { profile_name: String },
-    List { config_path: String },
-    Switch { profile: String },
-    Describe { profile_name: String },
+    Create {
+        profile_name: String,
+    },
+    List {
+        config_path: String,
+    },
+    Remove {
+        profile_name: String,
+    },
+    Add {
+        profile_name: String,
+    },
+    Swap {
+        profile_name: String,
+        new_profile_name: String,
+    },
+    Describe {
+        profile_name: String,
+    },
 }
