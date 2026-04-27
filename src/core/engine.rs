@@ -1,7 +1,7 @@
 use crate::core::state::StateStore;
 use crate::{config::profile, core::state::StateRepository};
 
-pub fn create(_dotfile_name: &str) {
+pub fn create<T: StateStore>(_dotfile_name: &str, state_repository: &mut StateRepository<T>) {
     let dotfile = profile::Dotfile {
         source: String::from("123"),
         description: None,
@@ -28,11 +28,15 @@ pub fn describe<T: StateStore>(profile_name: &str, state_repository: &mut StateR
     }
 }
 
-pub fn add(_profile_name: &str) {}
+pub fn add<T: StateStore>(_profile_name: &str, state_repository: &mut StateRepository<T>) {}
 
-pub fn remove(_profile_name: &str) {}
+pub fn remove<T: StateStore>(_profile_name: &str, state_repository: &mut StateRepository<T>) {}
 
-pub fn swap(profile_name: &str, new_profile_name: &str) {
-    remove(profile_name);
-    add(new_profile_name);
+pub fn swap<T: StateStore>(
+    profile_name: &str,
+    new_profile_name: &str,
+    state_repository: &mut StateRepository<T>,
+) {
+    remove(profile_name, state_repository);
+    add(new_profile_name, state_repository);
 }

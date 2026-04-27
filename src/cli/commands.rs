@@ -33,7 +33,7 @@ pub enum Commands {
 pub fn run<T: StateStore>(cli: Cli, state_repository: &mut StateRepository<T>) {
     match cli.command {
         Commands::Create { dotfile_name } => {
-            engine::create(&dotfile_name);
+            engine::create(&dotfile_name, state_repository);
         }
         Commands::List => {
             engine::list(state_repository);
@@ -42,16 +42,16 @@ pub fn run<T: StateStore>(cli: Cli, state_repository: &mut StateRepository<T>) {
             engine::describe(&dotfile_name, state_repository);
         }
         Commands::Add { dotfile_name } => {
-            engine::add(&dotfile_name);
+            engine::add(&dotfile_name, state_repository);
         }
         Commands::Remove { dotfile_name } => {
-            engine::remove(&dotfile_name);
+            engine::remove(&dotfile_name, state_repository);
         }
         Commands::Swap {
             dotfile_name,
             new_dotfile_name,
         } => {
-            engine::swap(&dotfile_name, &new_dotfile_name);
+            engine::swap(&dotfile_name, &new_dotfile_name, state_repository);
         }
     }
 }
