@@ -1,27 +1,29 @@
 use crate::config::profile;
-use crate::state;
+use crate::core;
 
-pub fn create(profile_name: &str) {
-    let profile = profile::Profile {
+pub fn create(dotfile_name: &str) {
+    let dotfile = profile::Dotfile {
         source: String::from("123"),
         description: None,
     };
-    println!("Initializing new profile: {}", profile_name);
-    profile::append_config_toml("examples/config.toml", profile_name, profile);
+    println!("Initializing new dotfile: {}", dotfile_name);
 }
 
-pub fn list(db: &mut sled::Db, config_path: &str) {
-    let config = profile::load_profiles(config_path);
-    if let Ok(config) = config {
-        for profile in config.profiles.keys() {
-            println!("{}", profile);
+pub fn list(db: &mut sled::Db) {
+    /*
+        let config = profile::load_profiles();
+        if let Ok(config) = config {
+            for profile in config.profiles.keys() {
+                println!("{}", profile);
+            }
+            core::mem::save_config(db, &config);
         }
-        state::mem::save_config(db, &config);
-    }
+    */
 }
 
 pub fn describe(profile_name: &str) {
     println!("Describe profile: {}", profile_name);
+    /*
     let config = profile::load_profiles("examples/config.toml");
     if let Ok(config) = config {
         if let Some(profile) = config.profiles.get(profile_name) {
@@ -30,6 +32,7 @@ pub fn describe(profile_name: &str) {
             println!("Profile not found");
         }
     }
+    */
 }
 
 pub fn add(_profile_name: &str) {}
