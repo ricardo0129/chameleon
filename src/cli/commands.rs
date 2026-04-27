@@ -1,5 +1,5 @@
 use crate::core::engine;
-use crate::core::state::StateRepository;
+use crate::core::state::{StateRepository, StateStore};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -30,7 +30,7 @@ pub enum Commands {
     },
 }
 
-pub fn run(cli: Cli, state_repository: &mut StateRepository) {
+pub fn run<T: StateStore>(cli: Cli, state_repository: &mut StateRepository<T>) {
     match cli.command {
         Commands::Create { dotfile_name } => {
             engine::create(&dotfile_name);
@@ -39,7 +39,7 @@ pub fn run(cli: Cli, state_repository: &mut StateRepository) {
             engine::list(state_repository);
         }
         Commands::Describe { dotfile_name } => {
-            engine::describe(&dotfile_name);
+            engine::describe(&dotfile_name, state_repository);
         }
         Commands::Add { dotfile_name } => {
             engine::add(&dotfile_name);
