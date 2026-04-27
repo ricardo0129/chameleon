@@ -1,4 +1,5 @@
 use crate::config::profile::Profile;
+use crate::core::constants::DOTFILES_NAMESPACE;
 use serde_json;
 use sled;
 use std::collections::{HashMap, HashSet};
@@ -13,17 +14,17 @@ pub struct State {
 pub trait StateStore {
     fn load_profiles(&mut self) -> Profile;
     fn save_config(&mut self, config: &Profile);
+    fn get_active_profiles(&self) -> Vec<String>;
 }
 
-struct StateRepository {
+pub struct StateRepository {
     pub db: Arc<dyn StateStore>,
 }
 
 impl StateStore for sled::Db {
     #[allow(dead_code)]
     fn load_profiles(&mut self) -> Profile {
-        let key = "config";
-        let v = self.get(key).unwrap();
+        let v = self.get(DOTFILES_NAMESPACE).unwrap();
         if let Some(encoded_config) = v {
             serde_json::from_slice::<Profile>(&encoded_config).unwrap();
         }
@@ -36,6 +37,9 @@ impl StateStore for sled::Db {
         let key = "config";
         let value: Vec<u8> = serde_json::to_vec(config).unwrap();
         self.insert(key, value).unwrap();
+    }
+    fn get_active_profiles(&self) -> Vec<String> {
+        vec![]
     }
 }
 

@@ -1,15 +1,14 @@
-use crate::config::profile;
-use crate::core;
+use crate::{config::profile, core::state::StateRepository};
 
-pub fn create(dotfile_name: &str) {
+pub fn create(_dotfile_name: &str) {
     let dotfile = profile::Dotfile {
         source: String::from("123"),
         description: None,
     };
-    println!("Initializing new dotfile: {}", dotfile_name);
+    println!("Initializing new dotfile: {}", dotfile.source);
 }
 
-pub fn list(db: &mut sled::Db) {
+pub fn list(_state_repository: &mut StateRepository) {
     /*
         let config = profile::load_profiles();
         if let Ok(config) = config {

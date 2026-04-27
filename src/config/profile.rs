@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::error::Error;
-use std::fs;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Profile {
@@ -13,12 +11,6 @@ pub struct Profile {
 pub struct Dotfile {
     pub source: String,
     pub description: Option<String>,
-}
-
-impl Profile {
-    pub fn add_dotfile(&mut self, name: &str, dotfile: Dotfile) {
-        self.dotfiles.insert(name.to_string(), dotfile);
-    }
 }
 
 /*

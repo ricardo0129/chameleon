@@ -1,4 +1,5 @@
 use crate::core::engine;
+use crate::core::state::StateRepository;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -13,9 +14,7 @@ pub enum Commands {
     Create {
         dotfile_name: String,
     },
-    List {
-        config_path: String,
-    },
+    List,
     Remove {
         dotfile_name: String,
     },
@@ -31,13 +30,13 @@ pub enum Commands {
     },
 }
 
-pub fn run(cli: Cli, db: &mut sled::Db) {
+pub fn run(cli: Cli, state_repository: &mut StateRepository) {
     match cli.command {
         Commands::Create { dotfile_name } => {
             engine::create(&dotfile_name);
         }
-        Commands::List { config_path } => {
-            engine::list(db);
+        Commands::List => {
+            engine::list(state_repository);
         }
         Commands::Describe { dotfile_name } => {
             engine::describe(&dotfile_name);
