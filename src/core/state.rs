@@ -2,17 +2,13 @@ use crate::config::profile::Profile;
 use crate::core::constants::DOTFILES_NAMESPACE;
 use serde_json;
 use sled;
-use std::collections::{HashMap, HashSet};
-
-pub struct State {
-    #[allow(dead_code)]
-    pub config: Profile,
-    pub _active_dotfiles: HashSet<String>,
-}
+use std::collections::HashMap;
 
 pub trait StateStore {
     fn load_profile(&mut self) -> Profile;
+    #[allow(dead_code)]
     fn save_profile(&mut self, config: &Profile);
+    #[allow(dead_code)]
     fn get_active_dotfiles(&self) -> Vec<String>;
 }
 
@@ -66,6 +62,7 @@ mod tests {
         let test_profile = Profile {
             dotfiles: HashMap::from([("test".to_string(), dotfile)]),
         };
+        state_repository.db.save_profile(&test_profile);
     }
 
     #[test]

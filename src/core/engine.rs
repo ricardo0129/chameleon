@@ -1,7 +1,7 @@
 use crate::core::state::StateStore;
 use crate::{config::profile, core::state::StateRepository};
 
-pub fn create<T: StateStore>(_dotfile_name: &str, state_repository: &mut StateRepository<T>) {
+pub fn create<T: StateStore>(_dotfile_name: &str, _state_repository: &mut StateRepository<T>) {
     let dotfile = profile::Dotfile {
         source: String::from("123"),
         description: None,
@@ -20,7 +20,6 @@ pub fn list<T: StateStore>(state_repository: &mut StateRepository<T>) {
 
 pub fn describe<T: StateStore>(profile_name: &str, state_repository: &mut StateRepository<T>) {
     let profile: profile::Profile = state_repository.db.load_profile();
-    let dotfile = profile.dotfiles.get(profile_name);
     if let Some(dotfile) = profile.dotfiles.get(profile_name) {
         println!("{}", dotfile.source);
     } else {
@@ -28,9 +27,9 @@ pub fn describe<T: StateStore>(profile_name: &str, state_repository: &mut StateR
     }
 }
 
-pub fn add<T: StateStore>(_profile_name: &str, state_repository: &mut StateRepository<T>) {}
+pub fn add<T: StateStore>(_profile_name: &str, _state_repository: &mut StateRepository<T>) {}
 
-pub fn remove<T: StateStore>(_profile_name: &str, state_repository: &mut StateRepository<T>) {}
+pub fn remove<T: StateStore>(_profile_name: &str, _state_repository: &mut StateRepository<T>) {}
 
 pub fn swap<T: StateStore>(
     profile_name: &str,
