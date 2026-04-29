@@ -1,42 +1,41 @@
-use crate::config::profile;
-use crate::state;
+use crate::core::state::StateStore;
+use crate::{config::profile, core::state::StateRepository};
 
-pub fn create(profile_name: &str) {
-    let profile = profile::Profile {
+pub fn create<T: StateStore>(_dotfile_name: &str, _state_repository: &mut StateRepository<T>) {
+    let dotfile = profile::Dotfile {
         source: String::from("123"),
         description: None,
     };
-    println!("Initializing new profile: {}", profile_name);
-    profile::append_config_toml("examples/config.toml", profile_name, profile);
+    println!("Initializing new dotfile: {}", dotfile.source);
 }
 
-pub fn list(db: &mut sled::Db, config_path: &str) {
-    let config = profile::load_profiles(config_path);
-    if let Ok(config) = config {
-        for profile in config.profiles.keys() {
-            println!("{}", profile);
-        }
-        state::mem::save_config(db, &config);
+pub fn list<T: StateStore>(state_repository: &mut StateRepository<T>) {
+    println!("Listing profiles..");
+    let profile: profile::Profile = state_repository.db.load_profile();
+    println!("Found {} profiles", profile.dotfiles.len());
+    for dotfile_name in profile.dotfiles.keys() {
+        println!("{}", dotfile_name);
     }
 }
 
-pub fn describe(profile_name: &str) {
-    println!("Describe profile: {}", profile_name);
-    let config = profile::load_profiles("examples/config.toml");
-    if let Ok(config) = config {
-        if let Some(profile) = config.profiles.get(profile_name) {
-            println!("Source: {}", profile.source);
-        } else {
-            println!("Profile not found");
-        }
+pub fn describe<T: StateStore>(profile_name: &str, state_repository: &mut StateRepository<T>) {
+    let profile: profile::Profile = state_repository.db.load_profile();
+    if let Some(dotfile) = profile.dotfiles.get(profile_name) {
+        println!("{}", dotfile.source);
+    } else {
+        println!("Dotfile not found");
     }
 }
 
-pub fn add(_profile_name: &str) {}
+pub fn add<T: StateStore>(_profile_name: &str, _state_repository: &mut StateRepository<T>) {}
 
-pub fn remove(_profile_name: &str) {}
+pub fn remove<T: StateStore>(_profile_name: &str, _state_repository: &mut StateRepository<T>) {}
 
-pub fn swap(profile_name: &str, new_profile_name: &str) {
-    remove(profile_name);
-    add(new_profile_name);
+pub fn swap<T: StateStore>(
+    profile_name: &str,
+    new_profile_name: &str,
+    state_repository: &mut StateRepository<T>,
+) {
+    remove(profile_name, state_repository);
+    add(new_profile_name, state_repository);
 }
