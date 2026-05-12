@@ -3,7 +3,6 @@ use std::collections::HashSet;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Profile {
-    #[serde(flatten)]
     pub dotfiles: DotFileList,
 }
 

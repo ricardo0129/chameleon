@@ -7,7 +7,8 @@ pub trait StateStore {
     fn active_profile(&self) -> Result<Option<Profile>, AppError>;
     fn add_profile(&self, profile_name: &str, profile: &Profile) -> Result<(), AppError>;
     fn remove_profile(&self, profile_name: &str) -> Result<(), AppError>;
-    fn profile_exists(&self, profile_name: &str) -> Result<(), AppError>;
+    fn profile_exists(&self, profile_name: &str) -> Result<bool, AppError>;
+    fn switch_profile(&self, profile_name: &str) -> Result<(), AppError>;
     fn add_dotfile(&self, dotfile_name: &str, dotfile: &Dotfile) -> Result<(), AppError>;
     fn remove_dotfile(&self, dotfile_name: &str) -> Result<(), AppError>;
     fn profile_add_dotfile(&self, profile_name: &str, dotfile_name: &str) -> Result<(), AppError>;
@@ -24,7 +25,6 @@ pub struct StateRepository<T: StateStore> {
 
 impl StateStore for sled::Db {
     fn active_profile(&self) -> Result<Option<Profile>, AppError> {
-        println!("getting active profile");
         let active_profile_lookup = self
             .get(ACTIVE_PROFILE_KEY)
             .map_err(|_e| AppError::Runtime)?;
@@ -43,24 +43,34 @@ impl StateStore for sled::Db {
         }
     }
 
-    fn add_profile(&self, profile_name: &str, profile: &Profile) -> Result<(), AppError> {
-        let encoded_profile = serde_json::to_vec(profile).map_err(|_e| AppError::Runtime)?;
-        let profile_tree = self
-            .open_tree(PROFILE_KEYSPACE)
-            .map_err(|_e| AppError::Runtime)?;
-        profile_tree
-            .insert(profile_name, encoded_profile)
-            .map_err(|_e| AppError::Runtime)?;
+    fn switch_profile(&self, profile_name: &str) -> Result<(), AppError> {
+        let active_profile_lookup = self
+            .insert(ACTIVE_PROFILE_KEY, profile_name)
+            .expect("unabel to update activeprofile");
         Ok(())
     }
 
-    fn profile_exists(&self, profile_name: &str) -> Result<(), AppError> {
+    fn add_profile(&self, profile_name: &str, profile: &Profile) -> Result<(), AppError> {
+        let encoded_profile = serde_json::to_vec(profile).unwrap();
+        let profile_tree = self
+            .open_tree(PROFILE_KEYSPACE)
+            .map_err(|_e| AppError::Runtime)
+            .unwrap();
+        profile_tree
+            .insert(profile_name, encoded_profile)
+            .map_err(|_e| AppError::Runtime)
+            .unwrap();
+        Ok(())
+    }
+
+    fn profile_exists(&self, profile_name: &str) -> Result<bool, AppError> {
         let profile_tree = self
             .open_tree(PROFILE_KEYSPACE)
             .expect("Unable to open Profile KeySpace");
-        profile_tree
-            .get(profile_name)?
-            .ok_or(AppError::OpeningKeySpace)
+        match profile_tree.get(profile_name).expect("Unable to read") {
+            None => Ok(true),
+            Some(_) => Ok(true),
+        }
     }
     fn remove_profile(&self, profile_name: &str) -> Result<(), AppError> {
         Ok(())

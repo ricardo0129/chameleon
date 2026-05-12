@@ -35,6 +35,8 @@ pub fn switch_profile<T: StateStore>(
     profile_name: &str,
 ) {
     println!("Switching profile to {}", profile_name);
+    state_repository.db.switch_profile(profile_name);
+    println!("finished updating profile");
 }
 
 pub fn create<T: StateStore>(
