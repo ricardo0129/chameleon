@@ -3,7 +3,7 @@ use crate::core::state::{StateRepository, StateStore};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "mycli")]
+#[command(name = "chameleon")]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
@@ -11,47 +11,31 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    Create {
-        dotfile_name: String,
+    AddProfile {
+        profile_name: String,
+        dotfile_list: Option<Vec<String>>,
     },
-    List,
-    Remove {
-        dotfile_name: String,
-    },
-    Add {
-        dotfile_name: String,
-    },
-    Swap {
-        dotfile_name: String,
-        new_dotfile_name: String,
-    },
-    Describe {
-        dotfile_name: String,
+    ListProfiles,
+    ActiveProfile,
+    SwitchProfile {
+        profile_name: String,
     },
 }
 
 pub fn run<T: StateStore>(cli: Cli, state_repository: &mut StateRepository<T>) {
     match cli.command {
-        Commands::Create { dotfile_name } => {
-            engine::create(&dotfile_name, state_repository);
-        }
-        Commands::List => {
-            engine::list(state_repository);
-        }
-        Commands::Describe { dotfile_name } => {
-            engine::describe(&dotfile_name, state_repository);
-        }
-        Commands::Add { dotfile_name } => {
-            engine::add(&dotfile_name, state_repository);
-        }
-        Commands::Remove { dotfile_name } => {
-            engine::remove(&dotfile_name, state_repository);
-        }
-        Commands::Swap {
-            dotfile_name,
-            new_dotfile_name,
+        Commands::AddProfile {
+            profile_name,
+            dotfile_list,
         } => {
-            engine::swap(&dotfile_name, &new_dotfile_name, state_repository);
+            engine::add_profile(state_repository, &profile_name, dotfile_list);
+        }
+        Commands::ListProfiles => {}
+        Commands::ActiveProfile => {
+            engine::active_profile(state_repository);
+        }
+        Commands::SwitchProfile { profile_name } => {
+            engine::switch_profile(state_repository, &profile_name);
         }
     }
 }
