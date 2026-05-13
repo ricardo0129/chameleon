@@ -1,7 +1,8 @@
-use crate::config::profile::Profile;
+use crate::config::profile::{Dotfile, Profile};
 use crate::core::error::AppError;
 use crate::core::state::StateStore;
 use crate::{config::profile, core::state::StateRepository};
+use log::info;
 use std::collections::HashSet;
 
 pub fn add_profile<T: StateStore>(
@@ -15,6 +16,20 @@ pub fn add_profile<T: StateStore>(
     };
     let profile = Profile { dotfiles };
     state_repository.db.add_profile(profile_name, &profile)?;
+    Ok(())
+}
+
+pub fn add_dotfile<T: StateStore>(
+    state_repository: &mut StateRepository<T>,
+    dotfile_name: String,
+    source: String,
+    description: Option<String>,
+) -> Result<(), AppError> {
+    let dotfile = Dotfile {
+        source,
+        description,
+    };
+    state_repository.db.add_dotfile(&dotfile_name, &dotfile)?;
     Ok(())
 }
 
@@ -34,11 +49,15 @@ pub fn switch_profile<T: StateStore>(
     state_repository: &mut StateRepository<T>,
     profile_name: &str,
 ) {
-    println!("Switching profile to {}", profile_name);
-    state_repository.db.switch_profile(profile_name);
-    println!("finished updating profile");
+    info!("Switching profile to {}", profile_name);
+    state_repository
+        .db
+        .switch_profile(profile_name)
+        .expect("Error switching profile");
+    info!("finished updating profile");
 }
 
+#[allow(dead_code)]
 pub fn create<T: StateStore>(
     dotfile_name: &str,
     source: &str,
@@ -52,7 +71,8 @@ pub fn create<T: StateStore>(
     println!("Initializing new {}: {}", dotfile_name, dotfile.source);
 }
 
-pub fn list_profiles<T: StateStore>(state_repository: &mut StateRepository<T>) {
+#[allow(dead_code)]
+pub fn list_profiles<T: StateStore>(_state_repository: &mut StateRepository<T>) {
     /*
         println!("Listing profiles..");
         let profile: profile::Profile = state_repository.db.load_profile();
@@ -63,7 +83,8 @@ pub fn list_profiles<T: StateStore>(state_repository: &mut StateRepository<T>) {
     */
 }
 
-pub fn describe<T: StateStore>(profile_name: &str, state_repository: &mut StateRepository<T>) {
+#[allow(dead_code)]
+pub fn describe<T: StateStore>(_profile_name: &str, _state_repository: &mut StateRepository<T>) {
     /*
         let profile: profile::Profile = state_repository.db.load_profile();
         if let Some(dotfile_name) = profile.dotfiles.get(profile_name) {
@@ -74,10 +95,13 @@ pub fn describe<T: StateStore>(profile_name: &str, state_repository: &mut StateR
     */
 }
 
+#[allow(dead_code)]
 pub fn add<T: StateStore>(_profile_name: &str, _state_repository: &mut StateRepository<T>) {}
 
+#[allow(dead_code)]
 pub fn remove<T: StateStore>(_profile_name: &str, _state_repository: &mut StateRepository<T>) {}
 
+#[allow(dead_code)]
 pub fn swap<T: StateStore>(
     profile_name: &str,
     new_profile_name: &str,

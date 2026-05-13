@@ -6,12 +6,17 @@ use serde_json;
 pub trait StateStore {
     fn active_profile(&self) -> Result<Option<Profile>, AppError>;
     fn add_profile(&self, profile_name: &str, profile: &Profile) -> Result<(), AppError>;
+    #[allow(dead_code)]
     fn remove_profile(&self, profile_name: &str) -> Result<(), AppError>;
+    #[allow(dead_code)]
     fn profile_exists(&self, profile_name: &str) -> Result<bool, AppError>;
     fn switch_profile(&self, profile_name: &str) -> Result<(), AppError>;
     fn add_dotfile(&self, dotfile_name: &str, dotfile: &Dotfile) -> Result<(), AppError>;
+    #[allow(dead_code)]
     fn remove_dotfile(&self, dotfile_name: &str) -> Result<(), AppError>;
+    #[allow(dead_code)]
     fn profile_add_dotfile(&self, profile_name: &str, dotfile_name: &str) -> Result<(), AppError>;
+    #[allow(dead_code)]
     fn profile_remove_dotfile(
         &self,
         profile_name: &str,
@@ -44,8 +49,7 @@ impl StateStore for sled::Db {
     }
 
     fn switch_profile(&self, profile_name: &str) -> Result<(), AppError> {
-        let active_profile_lookup = self
-            .insert(ACTIVE_PROFILE_KEY, profile_name)
+        self.insert(ACTIVE_PROFILE_KEY, profile_name)
             .expect("unabel to update activeprofile");
         Ok(())
     }
@@ -72,22 +76,35 @@ impl StateStore for sled::Db {
             Some(_) => Ok(true),
         }
     }
-    fn remove_profile(&self, profile_name: &str) -> Result<(), AppError> {
+    fn remove_profile(&self, _profile_name: &str) -> Result<(), AppError> {
         Ok(())
     }
     fn add_dotfile(&self, dotfile_name: &str, dotfile: &Dotfile) -> Result<(), AppError> {
+        let encoded_dotfile = serde_json::to_vec(dotfile).unwrap();
+        let dotfile_tree = self
+            .open_tree(DOTFILES_KEYSPACE)
+            .map_err(|_e| AppError::Runtime)
+            .unwrap();
+        dotfile_tree
+            .insert(dotfile_name, encoded_dotfile)
+            .map_err(|_e| AppError::Runtime)
+            .unwrap();
         Ok(())
     }
-    fn remove_dotfile(&self, dotfile_name: &str) -> Result<(), AppError> {
+    fn remove_dotfile(&self, _dotfile_name: &str) -> Result<(), AppError> {
         Ok(())
     }
-    fn profile_add_dotfile(&self, profile_name: &str, dotfile_name: &str) -> Result<(), AppError> {
+    fn profile_add_dotfile(
+        &self,
+        _profile_name: &str,
+        _dotfile_name: &str,
+    ) -> Result<(), AppError> {
         Ok(())
     }
     fn profile_remove_dotfile(
         &self,
-        profile_name: &str,
-        dotfile_name: &str,
+        _profile_name: &str,
+        _dotfile_name: &str,
     ) -> Result<(), AppError> {
         Ok(())
     }
@@ -96,8 +113,6 @@ impl StateStore for sled::Db {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::profile::{Dotfile, Profile};
-    use std::collections::HashMap;
     use std::env;
     use uuid::Uuid;
 
@@ -125,7 +140,7 @@ mod tests {
 
     #[test]
     fn test_load_empty_config() {
-        let mut state_repository = test_repository();
+        let _ = test_repository();
         //let profile = state_repository.db.load_profile();
         //assert_eq!(profile.dotfiles.len(), 0);
     }

@@ -15,6 +15,11 @@ pub enum Commands {
         profile_name: String,
         dotfile_list: Option<Vec<String>>,
     },
+    AddDotfile {
+        dotfile_name: String,
+        source: String,
+        description: Option<String>,
+    },
     ListProfiles,
     ActiveProfile,
     SwitchProfile {
@@ -28,7 +33,15 @@ pub fn run<T: StateStore>(cli: Cli, state_repository: &mut StateRepository<T>) {
             profile_name,
             dotfile_list,
         } => {
-            engine::add_profile(state_repository, &profile_name, dotfile_list);
+            engine::add_profile(state_repository, &profile_name, dotfile_list).expect("Error");
+        }
+        Commands::AddDotfile {
+            dotfile_name,
+            source,
+            description,
+        } => {
+            engine::add_dotfile(state_repository, dotfile_name, source, description)
+                .expect("Error");
         }
         Commands::ListProfiles => {}
         Commands::ActiveProfile => {
