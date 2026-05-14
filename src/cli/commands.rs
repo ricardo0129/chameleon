@@ -1,5 +1,6 @@
 use crate::core::engine;
-use crate::core::state::{StateRepository, StateStore};
+use crate::core::state::Database;
+use crate::core::state::{DotfileRepo, DotfileService, ProfileRepo, ProfileService};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -27,28 +28,46 @@ pub enum Commands {
     },
 }
 
-pub fn run<T: StateStore>(cli: Cli, state_repository: &mut StateRepository<T>) {
-    match cli.command {
-        Commands::AddProfile {
-            profile_name,
-            dotfile_list,
-        } => {
-            engine::add_profile(state_repository, &profile_name, dotfile_list).expect("Error");
-        }
-        Commands::AddDotfile {
-            dotfile_name,
-            source,
-            description,
-        } => {
-            engine::add_dotfile(state_repository, dotfile_name, source, description)
-                .expect("Error");
-        }
-        Commands::ListProfiles => {}
-        Commands::ActiveProfile => {
-            engine::active_profile(state_repository);
-        }
-        Commands::SwitchProfile { profile_name } => {
-            engine::switch_profile(state_repository, &profile_name);
+#[allow(dead_code)]
+pub struct App {
+    profile_service: ProfileService<Box<dyn ProfileRepo + Send + Sync>>,
+    dotfile_service: DotfileService<Box<dyn DotfileRepo + Send + Sync>>,
+}
+
+#[allow(dead_code)]
+impl App {
+    pub fn run(&self, cli: Cli, _db: &mut Database) {
+        match cli.command {
+            Commands::AddProfile {
+                profile_name: _,
+                dotfile_list: _,
+            } => {
+                engine::add_profile(&self.profile_service).expect("Error");
+            }
+            Commands::AddDotfile {
+                dotfile_name: _,
+                source: _,
+                description: _,
+            } => {
+                /*
+                engine::add_dotfile(db, dotfile_name, source, description).expect("Error");
+                */
+            }
+            Commands::ListProfiles => {
+                /*
+                engine::list_profiles(db);
+                */
+            }
+            Commands::ActiveProfile => {
+                /*
+                engine::active_profile(db);
+                */
+            }
+            Commands::SwitchProfile { profile_name: _ } => {
+                /*
+                engine::switch_profile(db, &profile_name);
+                */
+            }
         }
     }
 }

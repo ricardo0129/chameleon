@@ -1,147 +1,99 @@
-use crate::config::profile::{Dotfile, Profile};
-use crate::core::constants::{ACTIVE_PROFILE_KEY, DOTFILES_KEYSPACE, PROFILE_KEYSPACE};
+use crate::config::profile::{Dotfile, DotfileId, Profile, ProfileId};
 use crate::core::error::AppError;
-use serde_json;
+use rusqlite::Connection;
+use std::{cell::RefCell, rc::Rc};
 
-pub trait StateStore {
-    fn active_profile(&self) -> Result<Option<Profile>, AppError>;
-    fn add_profile(&self, profile_name: &str, profile: &Profile) -> Result<(), AppError>;
-    #[allow(dead_code)]
-    fn remove_profile(&self, profile_name: &str) -> Result<(), AppError>;
-    #[allow(dead_code)]
-    fn profile_exists(&self, profile_name: &str) -> Result<bool, AppError>;
-    fn switch_profile(&self, profile_name: &str) -> Result<(), AppError>;
-    fn add_dotfile(&self, dotfile_name: &str, dotfile: &Dotfile) -> Result<(), AppError>;
-    #[allow(dead_code)]
-    fn remove_dotfile(&self, dotfile_name: &str) -> Result<(), AppError>;
-    #[allow(dead_code)]
-    fn profile_add_dotfile(&self, profile_name: &str, dotfile_name: &str) -> Result<(), AppError>;
-    #[allow(dead_code)]
-    fn profile_remove_dotfile(
-        &self,
-        profile_name: &str,
-        dotfile_name: &str,
-    ) -> Result<(), AppError>;
+pub struct Database {
+    pub conn: Rc<RefCell<Connection>>,
 }
 
-pub struct StateRepository<T: StateStore> {
-    pub db: T,
+pub struct SqlProfileRepo {
+    conn: Rc<RefCell<Connection>>,
 }
 
-impl StateStore for sled::Db {
-    fn active_profile(&self) -> Result<Option<Profile>, AppError> {
-        let active_profile_lookup = self
-            .get(ACTIVE_PROFILE_KEY)
-            .map_err(|_e| AppError::Runtime)?;
-        let active_profile = active_profile_lookup.ok_or(AppError::Runtime)?;
-        let profile_tree = self
-            .open_tree(PROFILE_KEYSPACE)
-            .map_err(|_e| AppError::Runtime)?;
-        match profile_tree
-            .get(active_profile)
-            .map_err(|_e| AppError::Runtime)?
-        {
-            Some(encoded_profile) => Ok(Some(
-                serde_json::from_slice::<Profile>(&encoded_profile).unwrap(),
-            )),
-            None => Ok(None),
+#[allow(dead_code)]
+pub struct SqlDotfileRepo {
+    conn: Rc<RefCell<Connection>>,
+}
+
+#[allow(dead_code)]
+impl Database {
+    fn profiles(&self) -> SqlProfileRepo {
+        SqlProfileRepo {
+            conn: self.conn.clone(),
         }
     }
-
-    fn switch_profile(&self, profile_name: &str) -> Result<(), AppError> {
-        self.insert(ACTIVE_PROFILE_KEY, profile_name)
-            .expect("unabel to update activeprofile");
-        Ok(())
-    }
-
-    fn add_profile(&self, profile_name: &str, profile: &Profile) -> Result<(), AppError> {
-        let encoded_profile = serde_json::to_vec(profile).unwrap();
-        let profile_tree = self
-            .open_tree(PROFILE_KEYSPACE)
-            .map_err(|_e| AppError::Runtime)
-            .unwrap();
-        profile_tree
-            .insert(profile_name, encoded_profile)
-            .map_err(|_e| AppError::Runtime)
-            .unwrap();
-        Ok(())
-    }
-
-    fn profile_exists(&self, profile_name: &str) -> Result<bool, AppError> {
-        let profile_tree = self
-            .open_tree(PROFILE_KEYSPACE)
-            .expect("Unable to open Profile KeySpace");
-        match profile_tree.get(profile_name).expect("Unable to read") {
-            None => Ok(true),
-            Some(_) => Ok(true),
+    fn dotfiles(&self) -> SqlDotfileRepo {
+        SqlDotfileRepo {
+            conn: self.conn.clone(),
         }
     }
-    fn remove_profile(&self, _profile_name: &str) -> Result<(), AppError> {
-        Ok(())
+}
+
+#[allow(dead_code)]
+pub trait ProfileRepo {
+    fn get(&self, profile_id: ProfileId) -> Result<Profile, AppError>;
+    fn add(&self, profile: &Profile) -> Result<(), AppError>;
+    fn dotfiles(&self, profile_id: ProfileId) -> Result<Vec<Dotfile>, AppError>;
+}
+
+pub trait DotfileRepo {
+    fn get(&self, dotfile_id: DotfileId) -> Result<Dotfile, AppError>;
+}
+
+pub struct ProfileService<T> {
+    repo: T,
+}
+
+#[allow(dead_code)]
+impl<T: ProfileRepo> ProfileService<T> {
+    fn get_profile(&self, profile_id: ProfileId) -> Result<Profile, AppError> {
+        self.repo.get(profile_id)
     }
-    fn add_dotfile(&self, dotfile_name: &str, dotfile: &Dotfile) -> Result<(), AppError> {
-        let encoded_dotfile = serde_json::to_vec(dotfile).unwrap();
-        let dotfile_tree = self
-            .open_tree(DOTFILES_KEYSPACE)
-            .map_err(|_e| AppError::Runtime)
+    fn add_profile(&self, profile: &Profile) -> Result<(), AppError> {
+        self.repo.add(profile)
+    }
+}
+
+#[allow(dead_code)]
+impl ProfileRepo for SqlProfileRepo {
+    fn get(&self, profile_id: ProfileId) -> Result<Profile, AppError> {
+        let conn = self.conn.borrow();
+        let mut stmt = conn
+            .prepare("SELECT * FROM profiles WHERE profile_id = ?1")
             .unwrap();
-        dotfile_tree
-            .insert(dotfile_name, encoded_dotfile)
-            .map_err(|_e| AppError::Runtime)
+        let res = stmt
+            .query_one([profile_id.0], |row| {
+                Ok(Profile {
+                    id: ProfileId(row.get(0).unwrap()),
+                })
+            })
             .unwrap();
+        Ok(res)
+    }
+    fn add(&self, profile: &Profile) -> Result<(), AppError> {
+        let conn = self.conn.borrow();
+        conn.execute(
+            "INSERT INTO profiles (profile_id) VALUES (?1)",
+            (profile.id.0,),
+        )
+        .unwrap();
         Ok(())
     }
-    fn remove_dotfile(&self, _dotfile_name: &str) -> Result<(), AppError> {
-        Ok(())
+    fn dotfiles(&self, _profile_id: ProfileId) -> Result<Vec<Dotfile>, AppError> {
+        Ok(Vec::new())
     }
-    fn profile_add_dotfile(
-        &self,
-        _profile_name: &str,
-        _dotfile_name: &str,
-    ) -> Result<(), AppError> {
-        Ok(())
-    }
-    fn profile_remove_dotfile(
-        &self,
-        _profile_name: &str,
-        _dotfile_name: &str,
-    ) -> Result<(), AppError> {
-        Ok(())
+}
+
+pub struct DotfileService<T> {
+    repo: T,
+}
+#[allow(dead_code)]
+impl<T: DotfileRepo> DotfileService<T> {
+    fn get_dotfile(&self, dotfile_id: DotfileId) -> Result<Dotfile, AppError> {
+        self.repo.get(dotfile_id)
     }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use std::env;
-    use uuid::Uuid;
-
-    fn test_repository() -> StateRepository<sled::Db> {
-        let mut temp_dir = env::temp_dir();
-        temp_dir.push(Uuid::new_v4().to_string());
-        let db = sled::open(temp_dir).unwrap();
-        StateRepository { db }
-    }
-
-    #[test]
-    fn test_save_config() {
-        /*
-                let mut state_repository = test_repository();
-                let dotfile = Dotfile {
-                    source: "test".to_string(),
-                    description: Some("test description".to_string()),
-                };
-                let test_profile = Profile {
-                    dotfiles: HashMap::from([("test".to_string(), dotfile)]),
-                };
-                state_repository.db.save_profile(&test_profile);
-        */
-    }
-
-    #[test]
-    fn test_load_empty_config() {
-        let _ = test_repository();
-        //let profile = state_repository.db.load_profile();
-        //assert_eq!(profile.dotfiles.len(), 0);
-    }
-}
+mod tests {}
