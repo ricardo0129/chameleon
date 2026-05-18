@@ -1,35 +1,35 @@
-use crate::config::profile::{Dotfile, Profile};
 use crate::core::error::AppError;
-use crate::core::state::StateStore;
-use crate::{config::profile, core::state::StateRepository};
-use log::info;
-use std::collections::HashSet;
+use crate::core::state::{ProfileRepo, ProfileService};
 
-pub fn add_profile<T: StateStore>(
-    state_repository: &mut StateRepository<T>,
-    profile_name: &str,
-    dotfile_list: Option<Vec<String>>,
-) -> Result<(), AppError> {
+#[allow(dead_code)]
+type ProfileServiceType = ProfileService<Box<dyn ProfileRepo + Sync + Send>>;
+#[allow(dead_code)]
+pub fn add_profile(_service: &ProfileServiceType) -> Result<(), AppError> {
+    /*
     let dotfiles = match dotfile_list {
         None => HashSet::new(),
         Some(dotfiles) => dotfiles.into_iter().collect(),
     };
     let profile = Profile { dotfiles };
     state_repository.db.add_profile(profile_name, &profile)?;
+    */
     Ok(())
 }
 
+/*
 pub fn add_dotfile<T: StateStore>(
     state_repository: &mut StateRepository<T>,
     dotfile_name: String,
     source: String,
     description: Option<String>,
 ) -> Result<(), AppError> {
+    /*
     let dotfile = Dotfile {
         source,
         description,
     };
     state_repository.db.add_dotfile(&dotfile_name, &dotfile)?;
+    */
     Ok(())
 }
 
@@ -71,16 +71,13 @@ pub fn create<T: StateStore>(
     println!("Initializing new {}: {}", dotfile_name, dotfile.source);
 }
 
-#[allow(dead_code)]
-pub fn list_profiles<T: StateStore>(_state_repository: &mut StateRepository<T>) {
-    /*
-        println!("Listing profiles..");
-        let profile: profile::Profile = state_repository.db.load_profile();
-        println!("Found {} profiles", profile.dotfiles.len());
-        for dotfile_name in profile.dotfiles {
-            println!("{}", dotfile_name);
-        }
-    */
+pub fn list_profiles<T: StateStore>(state_repository: &mut StateRepository<T>) {
+    info!("Listing profiles..");
+    let profiles: Vec<String> = state_repository.db.list_profiles().unwrap();
+    info!("Found {} profiles", profiles.len());
+    for dotfile_name in profiles {
+        println!("{}", dotfile_name);
+    }
 }
 
 #[allow(dead_code)]
@@ -110,3 +107,4 @@ pub fn swap<T: StateStore>(
     remove(profile_name, state_repository);
     add(new_profile_name, state_repository);
 }
+*/

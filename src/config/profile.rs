@@ -1,15 +1,20 @@
-use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+pub struct ProfileId(pub i64);
+#[allow(dead_code)]
+pub struct DotfileId(pub i64);
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct Profile {
-    pub dotfiles: DotFileList,
+    pub id: ProfileId,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct Dotfile {
+    pub id: DotfileId,
     pub source: String,
     pub description: Option<String>,
 }
 
-pub type DotFileList = HashSet<String>;
+#[allow(dead_code)]
+pub struct ProfileDotfiles {
+    pub profile_id: ProfileId,
+    pub dotfile_id: DotfileId,
+}
