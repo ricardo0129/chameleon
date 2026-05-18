@@ -7,3 +7,8 @@ CREATE TABLE dotfiles (
     source TEXT NOT NULL,
     description TEXT
 );
+
+CREATE TABLE dotfile_profiles (
+    profile_id INTEGER,
+    dotfile_id INTEGER
+)
