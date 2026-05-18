@@ -1,5 +1,6 @@
-use crate::config::profile::{Dotfile, DotfileId, Profile, ProfileId};
 use crate::core::error::AppError;
+use crate::models::{dotfile::Dotfile, profile::Profile};
+use crate::models::{dotfile::DotfileId, profile::ProfileId};
 use rusqlite::Connection;
 use std::{cell::RefCell, rc::Rc};
 
@@ -8,12 +9,12 @@ pub struct Database {
 }
 
 pub struct SqlProfileRepo {
-    conn: Rc<RefCell<Connection>>,
+    pub conn: Rc<RefCell<Connection>>,
 }
 
 #[allow(dead_code)]
 pub struct SqlDotfileRepo {
-    conn: Rc<RefCell<Connection>>,
+    pub conn: Rc<RefCell<Connection>>,
 }
 
 #[allow(dead_code)]
@@ -42,7 +43,7 @@ pub trait DotfileRepo {
 }
 
 pub struct ProfileService<T> {
-    repo: T,
+    pub repo: T,
 }
 
 #[allow(dead_code)]
@@ -60,12 +61,13 @@ impl ProfileRepo for SqlProfileRepo {
     fn get(&self, profile_id: ProfileId) -> Result<Profile, AppError> {
         let conn = self.conn.borrow();
         let mut stmt = conn
-            .prepare("SELECT * FROM profiles WHERE profile_id = ?1")
+            .prepare("SELECT id, name FROM profiles WHERE profile_id = ?1")
             .unwrap();
         let res = stmt
             .query_one([profile_id.0], |row| {
                 Ok(Profile {
                     id: ProfileId(row.get(0).unwrap()),
+                    name: row.get(1).unwrap(),
                 })
             })
             .unwrap();
@@ -86,7 +88,7 @@ impl ProfileRepo for SqlProfileRepo {
 }
 
 pub struct DotfileService<T> {
-    repo: T,
+    pub repo: T,
 }
 #[allow(dead_code)]
 impl<T: DotfileRepo> DotfileService<T> {

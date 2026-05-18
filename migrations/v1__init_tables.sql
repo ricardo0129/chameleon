@@ -1,5 +1,6 @@
 CREATE TABLE profiles (
     id INTEGER PRIMARY KEY
+    name TEXT NOT NULL
 );
 
 CREATE TABLE dotfiles (

@@ -1,6 +1,5 @@
 use crate::core::engine;
-use crate::core::state::Database;
-use crate::core::state::{DotfileRepo, DotfileService, ProfileRepo, ProfileService};
+use crate::core::state::{DotfileService, ProfileService, SqlDotfileRepo, SqlProfileRepo};
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -30,28 +29,26 @@ pub enum Commands {
 
 #[allow(dead_code)]
 pub struct App {
-    profile_service: ProfileService<Box<dyn ProfileRepo + Send + Sync>>,
-    dotfile_service: DotfileService<Box<dyn DotfileRepo + Send + Sync>>,
+    pub profile_service: ProfileService<SqlProfileRepo>,
+    pub dotfile_service: DotfileService<SqlDotfileRepo>,
 }
 
 #[allow(dead_code)]
 impl App {
-    pub fn run(&self, cli: Cli, _db: &mut Database) {
+    pub fn run(&mut self, cli: Cli) {
         match cli.command {
             Commands::AddProfile {
                 profile_name: _,
                 dotfile_list: _,
             } => {
-                engine::add_profile(&self.profile_service).expect("Error");
+                engine::add_profile(&mut self.profile_service).expect("Error");
             }
             Commands::AddDotfile {
                 dotfile_name: _,
                 source: _,
                 description: _,
             } => {
-                /*
-                engine::add_dotfile(db, dotfile_name, source, description).expect("Error");
-                */
+                engine::add_dotfile(&mut self.dotfile_service).expect("Error");
             }
             Commands::ListProfiles => {
                 /*

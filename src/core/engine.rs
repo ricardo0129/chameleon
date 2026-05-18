@@ -1,10 +1,12 @@
 use crate::core::error::AppError;
-use crate::core::state::{ProfileRepo, ProfileService};
+use crate::core::state::{DotfileService, ProfileService};
+use crate::core::state::{SqlDotfileRepo, SqlProfileRepo};
 
 #[allow(dead_code)]
-type ProfileServiceType = ProfileService<Box<dyn ProfileRepo + Sync + Send>>;
+type ProfileServiceType = ProfileService<SqlProfileRepo>;
+type DotfileServiceType = DotfileService<SqlDotfileRepo>;
 #[allow(dead_code)]
-pub fn add_profile(_service: &ProfileServiceType) -> Result<(), AppError> {
+pub fn add_profile(_service: &mut ProfileServiceType) -> Result<(), AppError> {
     /*
     let dotfiles = match dotfile_list {
         None => HashSet::new(),
@@ -16,13 +18,7 @@ pub fn add_profile(_service: &ProfileServiceType) -> Result<(), AppError> {
     Ok(())
 }
 
-/*
-pub fn add_dotfile<T: StateStore>(
-    state_repository: &mut StateRepository<T>,
-    dotfile_name: String,
-    source: String,
-    description: Option<String>,
-) -> Result<(), AppError> {
+pub fn add_dotfile(_service: &mut DotfileServiceType) -> Result<(), AppError> {
     /*
     let dotfile = Dotfile {
         source,
@@ -33,6 +29,7 @@ pub fn add_dotfile<T: StateStore>(
     Ok(())
 }
 
+/*
 pub fn active_profile<T: StateStore>(state_repository: &mut StateRepository<T>) {
     let profile = state_repository.db.active_profile().unwrap();
     match profile {
